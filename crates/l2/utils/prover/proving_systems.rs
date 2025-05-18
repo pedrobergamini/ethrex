@@ -29,24 +29,24 @@ impl ProverType {
     }
 
     /// Used to get the empty_calldata structure for that specific prover
-    /// It has to match the `OnChainProposer.sol` verify() function
+    /// It has to match the `OnChainProposer.sol` verifyBatch() function
     pub fn empty_calldata(&self) -> Vec<Value> {
         match self {
             ProverType::RISC0 => {
                 vec![
-                    Value::Bytes(vec![].into()),
-                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()),
-                    Value::Bytes(vec![].into()),
+                    Value::Bytes(vec![].into()),                                      // seal
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // imageId
                 ]
             }
             ProverType::SP1 => {
-                vec![Value::Bytes(vec![].into()), Value::Bytes(vec![].into())]
+                vec![
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // vkey
+                    Value::Bytes(vec![].into()),                                      // proofBytes
+                ]
             }
             ProverType::Pico => {
                 vec![
-                    Value::FixedBytes(H256::zero().as_bytes().to_vec().into()),
-                    Value::Bytes(vec![].into()),
-                    Value::FixedArray(vec![Value::Uint(U256::zero()); 8]),
+                    Value::FixedArray(vec![Value::Uint(U256::zero()); 8]), // proof
                 ]
             }
             ProverType::TDX => {

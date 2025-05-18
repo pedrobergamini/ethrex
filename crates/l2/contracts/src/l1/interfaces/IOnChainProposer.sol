@@ -53,17 +53,16 @@ interface IOnChainProposer {
     /// @notice Method used to verify a batch of L2 blocks.
     /// @dev This method is used by the operator when a batch is ready to be
     /// verified (this is after proved).
+    /// Public inputs are retrieved from the committed batch data instead of being passed as parameters.
     /// @param batchNumber is the number of the batch to be verified.
     /// ----------------------------------------------------------------------
     /// @param risc0BlockProof is the proof of the batch to be verified.
     /// @param risc0ImageId Digest of the zkVM imageid.
-    /// @param risc0Journal public_inputs aka journal
     /// ----------------------------------------------------------------------
-    /// @param sp1PublicValues Values used to perform the execution
+    /// @param sp1ProgramVKey Public verifying key
     /// @param sp1ProofBytes Groth16 proof
     /// ----------------------------------------------------------------------
     /// @param picoRiscvVkey Public verifying key
-    /// @param picoPublicValues Values used to perform the execution
     /// @param picoProof Groth16 proof
     /// ----------------------------------------------------------------------
     /// @param tdxPublicValues Values used to perform the execution
@@ -73,14 +72,12 @@ interface IOnChainProposer {
         //risc0
         bytes memory risc0BlockProof,
         bytes32 risc0ImageId,
-        bytes calldata risc0Journal,
         //sp1
-        bytes calldata sp1PublicValues,
-        bytes memory sp1ProofBytes,
+        bytes32 sp1ProgramVKey,
+        bytes calldata sp1ProofBytes,
         //pico
         bytes32 picoRiscvVkey,
-        bytes calldata picoPublicValues,
-        uint256[8] memory picoProof,
+        uint256[8] calldata picoProof,
         //tdx
         bytes calldata tdxPublicValues,
         bytes memory tdxSignature
