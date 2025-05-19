@@ -469,6 +469,18 @@ contract OnChainProposer is
         );
     }
 
+    /// @notice Constructs public inputs from committed batch data for proof verification.
+    /// @dev This function retrieves the necessary data from batch commitments and formats it
+    /// into a 128-byte array that serves as public inputs for all proving systems.
+    /// @dev Public inputs structure (128 bytes total):
+    /// - bytes 0-32: Initial state root (from the last verified batch)
+    /// - bytes 32-64: Final state root (from the current batch)
+    /// - bytes 64-96: Withdrawals merkle root (from the current batch)
+    /// - bytes 96-128: Deposits log hash (from the current batch)
+    /// @dev The initial state root uses the last verified batch's newStateRoot because
+    /// batch verification is sequential and each batch depends on the previous one.
+    /// @param batchNumber The batch number to retrieve public inputs for.
+    /// @return publicInputs The 128-byte public inputs array for proof verification.
     function _getPublicInputsFromCommitment(
         uint256 batchNumber
     ) internal view returns (bytes memory) {
