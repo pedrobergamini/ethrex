@@ -26,7 +26,7 @@ const DEV_MODE_ADDRESS: H160 = H160([
     0x00, 0x00, 0x00, 0xAA,
 ]);
 const VERIFY_FUNCTION_SIGNATURE: &str =
-    "verifyBatch(uint256,bytes,bytes32,bytes32,bytes,uint256[8])";
+    "verifyBatch(uint256,bytes,bytes32,bytes32,bytes,bytes32,uint256[8])";
 
 pub async fn start_l1_proof_sender(cfg: SequencerConfig) -> Result<(), SequencerError> {
     let proof_sender =
@@ -168,9 +168,12 @@ impl L1ProofSender {
             .cloned()
             .unwrap_or(Value::Bytes(vec![].into()));
 
-        // Pico: use proof array only (index 0)
+        // Pico: use vkey (index 0) and proof array (index 1)
+        let pico_riscv_vkey = pico_proof.get(0).cloned().unwrap_or(Value::FixedBytes(
+            H256::zero().to_fixed_bytes().to_vec().into(),
+        ));
         let pico_proof_array = pico_proof
-            .get(0)
+            .get(1)
             .cloned()
             .unwrap_or(Value::FixedArray(vec![Value::Uint(U256::zero()); 8]));
 
@@ -180,6 +183,7 @@ impl L1ProofSender {
             risc0_image_id,
             sp1_vkey,
             sp1_proof_bytes,
+            pico_riscv_vkey,
             pico_proof_array,
         ];
 

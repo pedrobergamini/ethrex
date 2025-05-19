@@ -30,18 +30,19 @@ impl ProverType {
         match self {
             ProverType::RISC0 => {
                 vec![
-                    Value::Bytes(vec![].into()),                                      // seal
-                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // imageId
+                    Value::Bytes(vec![].into()),                                      // risc0_seal
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // image_id
                 ]
             }
             ProverType::SP1 => {
                 vec![
-                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // vkey
-                    Value::Bytes(vec![].into()),                                      // proofBytes
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // sp1_vkey
+                    Value::Bytes(vec![].into()),                                      // proof_bytes
                 ]
             }
             ProverType::Pico => {
                 vec![
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // pico_riscv_vkey
                     Value::FixedArray(vec![Value::Uint(U256::zero()); 8]), // proof
                 ]
             }
