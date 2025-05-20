@@ -152,7 +152,7 @@ impl L1ProofSender {
 
         // RISC0: use seal (index 0) and imageId (index 1)
         let risc0_seal = risc0_proof
-            .get(0)
+            .first()
             .cloned()
             .unwrap_or(Value::Bytes(vec![].into()));
         let risc0_image_id = risc0_proof.get(1).cloned().unwrap_or(Value::FixedBytes(
@@ -160,7 +160,7 @@ impl L1ProofSender {
         ));
 
         // SP1: use vkey (index 0) and proofBytes (index 1)
-        let sp1_vkey = sp1_proof.get(0).cloned().unwrap_or(Value::FixedBytes(
+        let sp1_vkey = sp1_proof.first().cloned().unwrap_or(Value::FixedBytes(
             H256::zero().to_fixed_bytes().to_vec().into(),
         ));
         let sp1_proof_bytes = sp1_proof
@@ -169,9 +169,12 @@ impl L1ProofSender {
             .unwrap_or(Value::Bytes(vec![].into()));
 
         // Pico: use vkey (index 0) and proof array (index 1)
-        let pico_riscv_vkey = pico_proof.get(0).cloned().unwrap_or(Value::FixedBytes(
-            H256::zero().to_fixed_bytes().to_vec().into(),
-        ));
+        let pico_riscv_vkey = pico_proof
+            .first()
+            .cloned()
+            .unwrap_or(Value::FixedBytes(
+                H256::zero().to_fixed_bytes().to_vec().into(),
+            ));
         let pico_proof_array = pico_proof
             .get(1)
             .cloned()
