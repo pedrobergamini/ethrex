@@ -169,12 +169,9 @@ impl L1ProofSender {
             .unwrap_or(Value::Bytes(vec![].into()));
 
         // Pico: use vkey (index 0) and proof array (index 1)
-        let pico_riscv_vkey = pico_proof
-            .first()
-            .cloned()
-            .unwrap_or(Value::FixedBytes(
-                H256::zero().to_fixed_bytes().to_vec().into(),
-            ));
+        let pico_riscv_vkey = pico_proof.first().cloned().unwrap_or(Value::FixedBytes(
+            H256::zero().to_fixed_bytes().to_vec().into(),
+        ));
         let pico_proof_array = pico_proof
             .get(1)
             .cloned()
