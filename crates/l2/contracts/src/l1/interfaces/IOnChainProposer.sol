@@ -65,7 +65,6 @@ interface IOnChainProposer {
     /// @param picoRiscvVkey Public verifying key
     /// @param picoProof Groth16 proof
     /// ----------------------------------------------------------------------
-    /// @param tdxPublicValues Values used to perform the execution
     /// @param tdxSignature TDX signature
     function verifyBatch(
         uint256 batchNumber,
@@ -79,7 +78,6 @@ interface IOnChainProposer {
         bytes32 picoRiscvVkey,
         uint256[8] calldata picoProof,
         //tdx
-        bytes calldata tdxPublicValues,
         bytes memory tdxSignature
     ) external;
     // TODO: imageid, programvkey and riscvvkey should be constants
