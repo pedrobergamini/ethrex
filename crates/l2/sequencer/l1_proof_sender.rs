@@ -4,23 +4,23 @@ use super::{
     utils::{get_latest_sent_batch, random_duration, send_verify_tx},
 };
 use crate::{
+    CommitterConfig, EthConfig, ProofCoordinatorConfig, SequencerConfig,
     sequencer::errors::ProofSenderError,
     utils::prover::{
         proving_systems::ProverType,
-        save_state::{batch_number_has_all_needed_proofs, read_proof, StateFileType},
+        save_state::{StateFileType, batch_number_has_all_needed_proofs, read_proof},
     },
-    CommitterConfig, EthConfig, ProofCoordinatorConfig, SequencerConfig,
 };
 use aligned_sdk::{
     common::types::{FeeEstimationType, Network, ProvingSystemId, VerificationData},
     verification_layer::{estimate_fee, get_nonce_from_batcher, submit},
 };
 use ethrex_common::{Address, U256};
-use ethrex_l2_sdk::calldata::{encode_calldata, Value};
+use ethrex_l2_sdk::calldata::{Value, encode_calldata};
 use ethrex_rpc::EthClient;
 use ethrex_storage_rollup::StoreRollup;
 use secp256k1::SecretKey;
-use spawned_concurrency::{send_after, CallResponse, CastResponse, GenServer, GenServerInMsg};
+use spawned_concurrency::{CallResponse, CastResponse, GenServer, GenServerInMsg, send_after};
 use spawned_rt::mpsc::Sender;
 use std::collections::HashMap;
 use tracing::{debug, error, info};
@@ -28,8 +28,7 @@ use tracing::{debug, error, info};
 // TODO: Remove this import once it's no longer required by the SDK.
 use ethers::signers::{Signer, Wallet};
 
-const VERIFY_FUNCTION_SIGNATURE: &str =
-    "verifyBatch(uint256,bytes,bytes32,bytes32,bytes,bytes32,uint256[8],bytes)";
+const VERIFY_FUNCTION_SIGNATURE: &str = "verifyBatch(uint256,bytes,bytes32,bytes,bytes)";
 
 #[derive(Clone)]
 pub struct L1ProofSenderState {
@@ -302,10 +301,6 @@ pub async fn send_proof_to_contract(
         proofs
             .get(&ProverType::SP1)
             .unwrap_or(&ProverType::SP1.empty_calldata())
-            .as_slice(),
-        proofs
-            .get(&ProverType::Pico)
-            .unwrap_or(&ProverType::Pico.empty_calldata())
             .as_slice(),
         proofs
             .get(&ProverType::TDX)

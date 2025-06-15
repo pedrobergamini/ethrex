@@ -25,22 +25,23 @@ use crate::{
 };
 use ethrex_blockchain::Blockchain;
 use ethrex_common::{
-    types::{MempoolTransaction, Transaction},
     H256, H512,
+    types::{MempoolTransaction, Transaction},
 };
 use ethrex_storage::Store;
 use futures::SinkExt;
-use k256::{ecdsa::SigningKey, PublicKey, SecretKey};
+use k256::{PublicKey, SecretKey, ecdsa::SigningKey};
 use rand::random;
 use std::{collections::HashSet, sync::Arc};
 use tokio::{
     io::{AsyncRead, AsyncWrite},
     sync::{
+        Mutex,
         broadcast::{self, error::RecvError},
-        mpsc, Mutex,
+        mpsc,
     },
     task,
-    time::{sleep, Instant},
+    time::{Instant, sleep},
 };
 use tokio_stream::StreamExt;
 use tokio_util::codec::Framed;
@@ -509,7 +510,6 @@ impl<S: AsyncWrite + AsyncRead + std::marker::Unpin> RLPxConnection<S> {
                 let response = process_account_range_request(req, self.storage.clone())?;
                 self.send(Message::AccountRange(response)).await?
             }
-            // TODO(#1129) Add the transaction to the mempool once received.
             Message::Transactions(txs) if peer_supports_eth => {
                 if self.blockchain.is_synced() {
                     let mut valid_txs = vec![];
@@ -520,7 +520,11 @@ impl<S: AsyncWrite + AsyncRead + std::marker::Unpin> RLPxConnection<S> {
                         }
                         valid_txs.push(tx.clone());
                     }
-                    self.broadcast_message(Message::Transactions(Transactions::new(valid_txs)))?;
+                    if !valid_txs.is_empty() {
+                        self.broadcast_message(Message::Transactions(Transactions::new(
+                            valid_txs,
+                        )))?;
+                    }
                 }
             }
             Message::GetBlockHeaders(msg_data) if peer_supports_eth => {
@@ -613,7 +617,7 @@ impl<S: AsyncWrite + AsyncRead + std::marker::Unpin> RLPxConnection<S> {
     ) -> Result<(), RLPxError> {
         if id != tokio::task::id() {
             match broadcasted_msg.as_ref() {
-                Message::Transactions(ref txs) => {
+                Message::Transactions(txs) => {
                     // TODO(#1131): Avoid cloning this vector.
                     let cloned = txs.transactions.clone();
                     let new_msg = Message::Transactions(Transactions {
@@ -653,12 +657,12 @@ impl<S: AsyncWrite + AsyncRead + std::marker::Unpin> RLPxConnection<S> {
                     return Err(RLPxError::HandshakeError(format!(
                         "Peer disconnected due to: {}",
                         disconnect.reason()
-                    )))
+                    )));
                 }
                 _ => {
                     return Err(RLPxError::HandshakeError(
                         "Expected a Status message".to_string(),
-                    ))
+                    ));
                 }
             }
         }

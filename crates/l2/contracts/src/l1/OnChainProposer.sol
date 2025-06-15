@@ -9,7 +9,6 @@ import {CommonBridge} from "./CommonBridge.sol";
 import {ICommonBridge} from "./interfaces/ICommonBridge.sol";
 import {IRiscZeroVerifier} from "./interfaces/IRiscZeroVerifier.sol";
 import {ISP1Verifier} from "./interfaces/ISP1Verifier.sol";
-import {IPicoVerifier} from "./interfaces/IPicoVerifier.sol";
 import {ITDXVerifier} from "./interfaces/ITDXVerifier.sol";
 
 /// @title OnChainProposer contract.
@@ -62,6 +61,7 @@ contract OnChainProposer is
         public authorizedSequencerAddresses;
 
     address public BRIDGE;
+    /// @dev Deprecated variable.
     address public PICOVERIFIER;
     address public R0VERIFIER;
     address public SP1VERIFIER;
@@ -74,7 +74,7 @@ contract OnChainProposer is
     /// @dev Used only in dev mode.
     address public constant DEV_MODE = address(0xAA);
 
-    /// @notice Indicates whether the contract operates in validium mode.
+    /// @notice Indicates whether the contract operates in validium mode.Add commentMore actions
     /// @dev This value is immutable and can only be set during contract deployment.
     bool public VALIDIUM;
 
@@ -95,7 +95,6 @@ contract OnChainProposer is
     /// @notice Initializes the contract.
     /// @dev This method is called only once after the contract is deployed.
     /// @dev It sets the bridge address.
-    /// @param _validium initialize the contract in validium mode.
     /// @param owner the address of the owner who can perform upgrades.
     /// @param alignedProofAggregator the address of the alignedProofAggregatorService contract.
     /// @param r0verifier the address of the risc0 groth16 verifier.
@@ -105,7 +104,6 @@ contract OnChainProposer is
         address owner,
         address r0verifier,
         address sp1verifier,
-        address picoverifier,
         address tdxverifier,
         address alignedProofAggregator,
         bytes32 sp1Vk,
@@ -129,21 +127,6 @@ contract OnChainProposer is
         );
 
         ALIGNEDPROOFAGGREGATOR = alignedProofAggregator;
-
-        // Set the PicoGroth16Verifier address
-        require(
-            PICOVERIFIER == address(0),
-            "OnChainProposer: contract already initialized"
-        );
-        require(
-            picoverifier != address(0),
-            "OnChainProposer: picoverifier is the zero address"
-        );
-        require(
-            picoverifier != address(this),
-            "OnChainProposer: picoverifier is the contract address"
-        );
-        PICOVERIFIER = picoverifier;
 
         // Set the Risc0Groth16Verifier address
         require(
@@ -233,7 +216,6 @@ contract OnChainProposer is
     function commitBatch(
         uint256 batchNumber,
         bytes32 newStateRoot,
-        bytes32 stateDiffKZGVersionedHash,
         bytes32 withdrawalsLogsMerkleRoot,
         bytes32 processedDepositLogsRollingHash,
         bytes32 lastBlockHash
@@ -252,8 +234,6 @@ contract OnChainProposer is
             "OnChainProposer: lastBlockHash cannot be zero"
         );
 
-        // Check if commitment is equivalent to blob's KZG commitment.
-
         if (processedDepositLogsRollingHash != bytes32(0)) {
             bytes32 claimedProcessedDepositLogs = ICommonBridge(BRIDGE)
                 .getPendingDepositLogsVersionedHash(
@@ -270,9 +250,18 @@ contract OnChainProposer is
                 withdrawalsLogsMerkleRoot
             );
         }
+
+        // Blob is published in the (EIP-4844) transaction that calls this function.
+        bytes32 blobVersionedHash = blobhash(0);
+        if (VALIDIUM) {
+            require(blobVersionedHash == 0, "L2 running as validium but blob was published");
+        } else {
+            require(blobVersionedHash != 0, "L2 running as rollup but blob was not published");
+        }
+
         batchCommitments[batchNumber] = BatchCommitmentInfo(
             newStateRoot,
-            stateDiffKZGVersionedHash,
+            blobVersionedHash,
             processedDepositLogsRollingHash,
             withdrawalsLogsMerkleRoot,
             lastBlockHash
@@ -294,11 +283,7 @@ contract OnChainProposer is
         bytes memory risc0BlockProof,
         bytes32 risc0ImageId,
         //sp1
-        bytes32 sp1ProgramVKey,
-        bytes calldata sp1ProofBytes,
-        //pico
-        bytes32 picoRiscvVkey,
-        uint256[8] calldata picoProof,
+        bytes memory sp1ProofBytes,
         //tdx
         bytes memory tdxSignature
     ) external override onlySequencer {
@@ -317,18 +302,6 @@ contract OnChainProposer is
             batchCommitments[batchNumber].newStateRoot != bytes32(0),
             "OnChainProposer: cannot verify an uncommitted batch"
         );
-
-        // Construct public inputs from committed batch data
-        bytes memory publicInputs = _getPublicInputsFromCommitment(batchNumber);
-
-        if (PICOVERIFIER != DEV_MODE) {
-            // If the verification fails, it will revert.
-            IPicoVerifier(PICOVERIFIER).verifyPicoProof(
-                picoRiscvVkey,
-                publicInputs,
-                picoProof
-            );
-        }
 
         if (R0VERIFIER != DEV_MODE) {
             // If the verification fails, it will revert.
@@ -434,7 +407,7 @@ contract OnChainProposer is
         bytes calldata publicData
     ) internal view {
         require(
-            publicData.length == 160,
+            publicData.length == 192,
             "OnChainProposer: invaid public data length"
         );
         bytes32 initialStateRoot = bytes32(publicData[0:32]);
@@ -460,7 +433,13 @@ contract OnChainProposer is
                 depositsLogHash,
             "OnChainProposer: deposits hash public input does not match with committed deposits"
         );
-        bytes32 lastBlockHash = bytes32(publicData[128:160]);
+        bytes32 blobVersionedHash = bytes32(publicData[128:160]);
+        require(
+            batchCommitments[batchNumber].stateDiffKZGVersionedHash ==
+                blobVersionedHash,
+            "OnChainProposer: blob versioned hash public input does not match with committed hash"
+        );
+        bytes32 lastBlockHash = bytes32(publicData[160:192]);
         require(
             batchCommitments[batchNumber].lastBlockHash == lastBlockHash,
             "OnChainProposer: last block hash public inputs don't match with last block hash"

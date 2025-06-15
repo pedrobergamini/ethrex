@@ -35,7 +35,6 @@ interface IOnChainProposer {
     /// and to publish withdrawals if any.
     /// @param batchNumber the number of the batch to be committed.
     /// @param newStateRoot the new state root of the batch to be committed.
-    /// @param stateDiffKZGVersionedHash of the block to be committed.
     /// @param withdrawalsLogsMerkleRoot the merkle root of the withdrawal logs
     /// of the batch to be committed.
     /// @param processedDepositLogsRollingHash the rolling hash of the processed
@@ -44,7 +43,6 @@ interface IOnChainProposer {
     function commitBatch(
         uint256 batchNumber,
         bytes32 newStateRoot,
-        bytes32 stateDiffKZGVersionedHash,
         bytes32 withdrawalsLogsMerkleRoot,
         bytes32 processedDepositLogsRollingHash,
         bytes32 lastBlockHash
@@ -59,11 +57,7 @@ interface IOnChainProposer {
     /// @param risc0BlockProof is the proof of the batch to be verified.
     /// @param risc0ImageId Digest of the zkVM imageid.
     /// ----------------------------------------------------------------------
-    /// @param sp1ProgramVKey Public verifying key
     /// @param sp1ProofBytes Groth16 proof
-    /// ----------------------------------------------------------------------
-    /// @param picoRiscvVkey Public verifying key
-    /// @param picoProof Groth16 proof
     /// ----------------------------------------------------------------------
     /// @param tdxSignature TDX signature
     function verifyBatch(
@@ -72,11 +66,7 @@ interface IOnChainProposer {
         bytes memory risc0BlockProof,
         bytes32 risc0ImageId,
         //sp1
-        bytes32 sp1ProgramVKey,
-        bytes calldata sp1ProofBytes,
-        //pico
-        bytes32 picoRiscvVkey,
-        uint256[8] calldata picoProof,
+        bytes memory sp1ProofBytes,
         //tdx
         bytes memory tdxSignature
     ) external;

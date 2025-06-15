@@ -4,11 +4,13 @@ use crate::utils::prover::proving_systems::ProverType;
 use ethereum_types::FromStrRadixErr;
 use ethrex_blockchain::error::{ChainError, InvalidForkChoice};
 use ethrex_common::types::{BlobsBundleError, FakeExponentialError};
+use ethrex_l2_common::deposits::DepositError;
+use ethrex_l2_common::state_diff::StateDiffError;
+use ethrex_l2_common::withdrawals::WithdrawalError;
 use ethrex_l2_sdk::merkle_tree::MerkleError;
-use ethrex_rpc::clients::eth::errors::{CalldataEncodeError, EthClientError};
 use ethrex_rpc::clients::EngineClientError;
+use ethrex_rpc::clients::eth::errors::{CalldataEncodeError, EthClientError};
 use ethrex_storage::error::StoreError;
-use ethrex_trie::TrieError;
 use ethrex_vm::{EvmError, ProverDBError};
 use spawned_concurrency::GenServerError;
 use tokio::task::JoinError;
@@ -69,6 +71,8 @@ pub enum ProverServerError {
     StorageDataIsNone,
     #[error("ProverServer failed to create ProverInputs: {0}")]
     FailedToCreateProverInputs(#[from] EvmError),
+    #[error("ProverServer failed to create ExecutionWitness: {0}")]
+    FailedToCreateExecutionWitness(#[from] ChainError),
     #[error("ProverServer JoinError: {0}")]
     JoinError(#[from] JoinError),
     #[error("ProverServer failed: {0}")]
@@ -85,10 +89,18 @@ pub enum ProverServerError {
     InternalError(String),
     #[error("ProverServer failed when (de)serializing JSON: {0}")]
     JsonError(#[from] serde_json::Error),
+    #[error("ProverServer encountered a StateDiffError")]
+    StateDiffError(#[from] StateDiffError),
+    #[error("ProverServer encountered a ExecutionCacheError")]
+    ExecutionCacheError(#[from] ExecutionCacheError),
+    #[error("ProverServer encountered a BlobsBundleError: {0}")]
+    BlobsBundleError(#[from] ethrex_common::types::BlobsBundleError),
     #[error("Failed to execute command: {0}")]
     ComandError(std::io::Error),
     #[error("ProverServer failed failed because of a ProverDB error: {0}")]
     ProverDBError(#[from] ProverDBError),
+    #[error("Missing blob for batch {0}")]
+    MissingBlob(u64),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -169,6 +181,8 @@ pub enum BlockProducerError {
     FailedToEncodeAccountStateDiff(#[from] StateDiffError),
     #[error("Failed to get data from: {0}")]
     FailedToGetDataFrom(String),
+    #[error("Spawned GenServer Error")]
+    GenServerError(GenServerError),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -211,6 +225,10 @@ pub enum CommitterError {
     InternalError(String),
     #[error("Failed to get withdrawals: {0}")]
     FailedToGetWithdrawals(#[from] UtilsError),
+    #[error("Deposit error: {0}")]
+    DepositError(#[from] DepositError),
+    #[error("Withdrawal error: {0}")]
+    WithdrawalError(#[from] WithdrawalError),
     #[error("Spawned GenServer Error")]
     GenServerError(GenServerError),
 }
@@ -221,34 +239,12 @@ pub enum BlobEstimationError {
     OverflowError,
     #[error("Failed to calculate blob gas due to invalid parameters")]
     CalculationError,
-    #[error("Blob gas estimation resulted in an infinite or undefined value. Outside valid or expected ranges")]
+    #[error(
+        "Blob gas estimation resulted in an infinite or undefined value. Outside valid or expected ranges"
+    )]
     NonFiniteResult,
     #[error("{0}")]
     FakeExponentialError(#[from] FakeExponentialError),
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum StateDiffError {
-    #[error("StateDiff failed to deserialize: {0}")]
-    FailedToDeserializeStateDiff(String),
-    #[error("StateDiff failed to serialize: {0}")]
-    FailedToSerializeStateDiff(String),
-    #[error("StateDiff invalid account state diff type: {0}")]
-    InvalidAccountStateDiffType(u8),
-    #[error("StateDiff unsupported version: {0}")]
-    UnsupportedVersion(u8),
-    #[error("Both bytecode and bytecode hash are set")]
-    BytecodeAndBytecodeHashSet,
-    #[error("Empty account diff")]
-    EmptyAccountDiff,
-    #[error("The length of the vector is too big to fit in u16: {0}")]
-    LengthTooBig(#[from] core::num::TryFromIntError),
-    #[error("DB Error: {0}")]
-    DbError(#[from] TrieError),
-    #[error("Store Error: {0}")]
-    StoreError(#[from] StoreError),
-    #[error("New nonce is lower than the previous one")]
-    FailedToCalculateNonce,
 }
 
 #[derive(Debug, thiserror::Error)]
