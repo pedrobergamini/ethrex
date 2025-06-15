@@ -46,11 +46,12 @@ impl ProverType {
             }
             ProverType::Pico => {
                 vec![
-                    Value::FixedArray(vec![Value::Uint(U256::zero()); 8]), // proof
+                    Value::FixedBytes(H256::zero().to_fixed_bytes().to_vec().into()), // vkey
+                    Value::FixedArray(vec![Value::Uint(U256::zero()); 8]),            // proof
                 ]
             }
             ProverType::TDX => {
-                vec![Value::Bytes(vec![].into()), Value::Bytes(vec![].into())]
+                vec![Value::Bytes(vec![].into())] // Only signature, no public values
             }
             ProverType::Exec => unimplemented!("Doesn't need to generate an empty calldata."),
             ProverType::Aligned => unimplemented!("Doesn't need to generate an empty calldata."),
