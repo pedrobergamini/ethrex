@@ -1,7 +1,7 @@
 use std::{env::temp_dir, path::PathBuf};
 
 use ethrex_common::U256;
-use ethrex_l2::utils::prover::proving_systems::{ProofCalldata, ProverType};
+use ethrex_l2::utils::prover::proving_systems::{BatchProof, ProofCalldata, ProverType};
 use ethrex_l2_sdk::calldata::Value;
 use pico_sdk::vk_client::KoalaBearProveVKClient;
 use serde::{Deserialize, Serialize};
@@ -85,19 +85,24 @@ pub fn to_batch_proof(
 
 fn to_calldata(output: ProveOutput) -> ProofCalldata {
     let ProveOutput {
-        public_values,
+        public_values: _,
         proof,
     } = output;
 
     // TODO: double check big endian is correct
     let proof = proof
         .chunks(32)
-        .map(|integer| Value::Int(U256::from_big_endian(integer)))
+        .map(|integer| Value::Uint(U256::from_big_endian(integer)))
         .collect();
 
-    // bytes calldata publicValues,
-    // uint256[8] calldata proof
-    let calldata = vec![Value::Bytes(public_values.into()), Value::FixedArray(proof)];
+    // bytes32 picoRiscvVkey,
+    // uint256[8] calldata picoProof
+    // TODO: Extract the actual RISC-V verification key from Pico SDK
+    // The KoalaBearProveVKClient should provide a way to get the vkey
+    // Similar to how SP1 has `vk.hash_bytes()` and RISC0 has image ID
+    // For now using a placeholder - THIS MUST BE FIXED BEFORE PRODUCTION
+    let vkey = vec![0u8; 32];
+    let calldata = vec![Value::FixedBytes(vkey.into()), Value::FixedArray(proof)];
 
     ProofCalldata {
         prover_type: ProverType::Pico,
