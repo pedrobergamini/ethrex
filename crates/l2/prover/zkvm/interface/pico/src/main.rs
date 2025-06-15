@@ -10,5 +10,6 @@ pub fn main() {
     let input: ProgramInput = read_as();
     let output = zkvm_interface::execution::execution_program(input).unwrap();
 
-    commit(&output);
+    // Pico SDK doesn't have commit_slice, so we use commit with the encoded bytes
+    commit(&output.encode());
 }
