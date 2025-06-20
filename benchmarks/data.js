@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1750348389727,
+  "lastUpdate": 1750463000813,
   "repoUrl": "https://github.com/pedrobergamini/ethrex",
   "entries": {
     "Benchmark": [
@@ -29,6 +29,36 @@ window.BENCHMARK_DATA = {
             "name": "Block import/Block import ERC20 transfers",
             "value": 226006205894,
             "range": "± 1452487140",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41773103+pedrobergamini@users.noreply.github.com",
+            "name": "pedrobergamini",
+            "username": "pedrobergamini"
+          },
+          "committer": {
+            "email": "41773103+pedrobergamini@users.noreply.github.com",
+            "name": "pedrobergamini",
+            "username": "pedrobergamini"
+          },
+          "distinct": true,
+          "id": "550e9c6739761f916955890e204f5bc2c9427f83",
+          "message": "chore: remove typo from natspec",
+          "timestamp": "2025-06-20T19:56:00-03:00",
+          "tree_id": "cdfcf5b890c200fadea6bff2399724e5a70f7688",
+          "url": "https://github.com/pedrobergamini/ethrex/commit/550e9c6739761f916955890e204f5bc2c9427f83"
+        },
+        "date": 1750462999403,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Block import/Block import ERC20 transfers",
+            "value": 225122016192,
+            "range": "± 553577143",
             "unit": "ns/iter"
           }
         ]
