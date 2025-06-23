@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1750694165572,
+  "lastUpdate": 1750717275357,
   "repoUrl": "https://github.com/pedrobergamini/ethrex",
   "entries": {
     "Benchmark": [
@@ -119,6 +119,36 @@ window.BENCHMARK_DATA = {
             "name": "Block import/Block import ERC20 transfers",
             "value": 228015643245,
             "range": "± 1281236830",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49622509+jrchatruc@users.noreply.github.com",
+            "name": "Javier Rodríguez Chatruc",
+            "username": "jrchatruc"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b084f6ba8981ac67ace465563f51fe02530666df",
+          "message": "Merge branch 'main' into main",
+          "timestamp": "2025-06-23T18:33:25-03:00",
+          "tree_id": "88c1ec123020f3f7f6f74cde86654f7de2a133c4",
+          "url": "https://github.com/pedrobergamini/ethrex/commit/b084f6ba8981ac67ace465563f51fe02530666df"
+        },
+        "date": 1750717273155,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Block import/Block import ERC20 transfers",
+            "value": 225598127685,
+            "range": "± 1894785067",
             "unit": "ns/iter"
           }
         ]
