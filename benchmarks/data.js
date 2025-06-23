@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1750463000813,
+  "lastUpdate": 1750693524742,
   "repoUrl": "https://github.com/pedrobergamini/ethrex",
   "entries": {
     "Benchmark": [
@@ -59,6 +59,36 @@ window.BENCHMARK_DATA = {
             "name": "Block import/Block import ERC20 transfers",
             "value": 225122016192,
             "range": "± 553577143",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41773103+pedrobergamini@users.noreply.github.com",
+            "name": "pedrobergamini",
+            "username": "pedrobergamini"
+          },
+          "committer": {
+            "email": "41773103+pedrobergamini@users.noreply.github.com",
+            "name": "pedrobergamini",
+            "username": "pedrobergamini"
+          },
+          "distinct": true,
+          "id": "b2042fd1ba0d89da391edeae4e5c59ff15694240",
+          "message": "chore: resolve OnChainProposer conflicts",
+          "timestamp": "2025-06-23T11:56:32-03:00",
+          "tree_id": "cc9fb37935c12ffbdc3de9d27afe1fcba52e87fe",
+          "url": "https://github.com/pedrobergamini/ethrex/commit/b2042fd1ba0d89da391edeae4e5c59ff15694240"
+        },
+        "date": 1750693522959,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "Block import/Block import ERC20 transfers",
+            "value": 227899626154,
+            "range": "± 384930369",
             "unit": "ns/iter"
           }
         ]
