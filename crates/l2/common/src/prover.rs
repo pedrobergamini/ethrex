@@ -47,14 +47,12 @@ impl ProverType {
             }
             ProverType::SP1 => {
                 vec![
-                    Value::Bytes(vec![].into()),
-                    Value::Bytes(vec![].into()),
+                    Value::Bytes(vec![].into()), // sp1ProofBytes only
                 ]
             }
             ProverType::TDX => {
                 vec![
-                    Value::Bytes(vec![].into()),
-                    Value::Bytes(vec![].into()),
+                    Value::Bytes(vec![].into()), // signature only
                 ]
             }
             ProverType::Exec => unimplemented!("Doesn't need to generate an empty calldata."),
