@@ -76,7 +76,7 @@ contract OnChainProposer is
     /// @dev Used only in dev mode.
     address public constant DEV_MODE = address(0xAA);
 
-    /// @notice Indicates whether the contract operates in validium mode.Add commentMore actions
+    /// @notice Indicates whether the contract operates in validium mode.
     /// @dev This value is immutable and can only be set during contract deployment.
     bool public VALIDIUM;
 
@@ -291,7 +291,6 @@ contract OnChainProposer is
                 privileged_transaction_count
             );
         }
-
         if (R0VERIFIER != DEV_MODE) {
             // If the verification fails, it will revert.
             _verifyPublicData(batchNumber, risc0Journal);
@@ -455,6 +454,7 @@ contract OnChainProposer is
         );
     }
 
+    //
     /// @inheritdoc IOnChainProposer
     function revertBatch(
         uint256 batchNumber
