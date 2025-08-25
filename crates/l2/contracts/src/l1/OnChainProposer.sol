@@ -255,7 +255,6 @@ contract OnChainProposer is
         uint256 batchNumber,
         //risc0
         bytes memory risc0BlockProof,
-        bytes calldata risc0Journal,
         //sp1
         bytes memory sp1ProofBytes,
         //tdx

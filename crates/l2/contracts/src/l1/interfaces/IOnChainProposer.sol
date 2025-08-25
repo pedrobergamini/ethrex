@@ -58,7 +58,7 @@ interface IOnChainProposer {
     /// @param batchNumber is the number of the batch to be verified.
     /// ----------------------------------------------------------------------
     /// @param risc0BlockProof is the proof of the batch to be verified.
-    /// @param risc0Journal public_inputs aka journal
+    /// RISC0 journal/public inputs are reconstructed on-chain; no calldata arg.
     /// ----------------------------------------------------------------------
     /// @param sp1ProofBytes Groth16 proof
     /// ----------------------------------------------------------------------
@@ -67,7 +67,6 @@ interface IOnChainProposer {
         uint256 batchNumber,
         //risc0
         bytes memory risc0BlockProof,
-        bytes calldata risc0Journal,
         //sp1
         bytes memory sp1ProofBytes,
         //tdx

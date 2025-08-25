@@ -13,8 +13,13 @@ use ethrex_l2_common::{
 };
 use std::time::Instant;
 
+#[cfg(all(not(clippy), feature = "sp1"))]
 static PROGRAM_ELF: &[u8] =
     include_bytes!("../../zkvm/interface/sp1/out/riscv32im-succinct-zkvm-elf");
+
+// When running clippy or without the sp1 feature, avoid requiring the ELF file.
+#[cfg(any(clippy, not(feature = "sp1")))]
+static PROGRAM_ELF: &[u8] = &[];
 
 struct ProverSetup {
     client: EnvProver,
