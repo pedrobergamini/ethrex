@@ -115,7 +115,7 @@ impl ProgramOutput {
         .concat()
     }
 
-    /// Encode public inputs exactly as expected by the on-chain contract (256 bytes total).
+    /// Encode public inputs exactly as expected by the on-chain contract.
     /// Layout:
     /// - 0..32: initial_state_hash
     /// - 32..64: final_state_hash

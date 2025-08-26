@@ -11,6 +11,6 @@ pub fn main() {
 
     let output = execution_program(input).unwrap();
 
-    // Commit the 256-byte contract public inputs
+    // Commit the contract public inputs
     sp1_zkvm::io::commit_slice(&output.encode_contract_pis());
 }

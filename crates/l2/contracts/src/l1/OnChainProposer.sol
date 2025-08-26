@@ -305,7 +305,7 @@ contract OnChainProposer is
             // SP1 public values include an 8-byte length header.
             bytes memory sp1PublicValues = abi.encodePacked(uint64(publicInputs.length), publicInputs);
             // If the verification fails, it will revert.
-            _verifyPublicData(batchNumber, sp1PublicValues[8:]);
+            _verifyPublicData(batchNumber, publicInputs);
             ISP1Verifier(SP1VERIFIER).verifyProof(
                 SP1_VERIFICATION_KEY,
                 sp1PublicValues,
@@ -472,53 +472,19 @@ contract OnChainProposer is
         BatchCommitmentInfo memory currentBatch = batchCommitments[batchNumber];
         BatchCommitmentInfo memory previousBatch = batchCommitments[lastVerifiedBatch];
 
-        bytes memory publicInputs = new bytes(256);
-
-        // Initial state root
-        bytes32 initialStateRoot = previousBatch.newStateRoot;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[i] = bytes1(uint8(uint256(initialStateRoot) >> (8 * (31 - i))));
-        }
-
-        // Final state root
-        bytes32 finalStateRoot = currentBatch.newStateRoot;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[32 + i] = bytes1(uint8(uint256(finalStateRoot) >> (8 * (31 - i))));
-        }
-
-        // Withdrawals merkle root
-        bytes32 withdrawalsRoot = currentBatch.withdrawalsLogsMerkleRoot;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[64 + i] = bytes1(uint8(uint256(withdrawalsRoot) >> (8 * (31 - i))));
-        }
-
-        // Processed privileged transactions rolling hash
-        bytes32 privilegedHash = currentBatch.processedPrivilegedTransactionsRollingHash;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[96 + i] = bytes1(uint8(uint256(privilegedHash) >> (8 * (31 - i))));
-        }
-
-        // Blob versioned hash
-        bytes32 blobVersionedHash = currentBatch.stateDiffKZGVersionedHash;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[128 + i] = bytes1(uint8(uint256(blobVersionedHash) >> (8 * (31 - i))));
-        }
-
-        // Last block hash
-        bytes32 lastBlockHash = currentBatch.lastBlockHash;
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[160 + i] = bytes1(uint8(uint256(lastBlockHash) >> (8 * (31 - i))));
-        }
-
-        // Chain ID
-        bytes32 chainIdBytes = bytes32(CHAIN_ID);
-        for (uint256 i = 0; i < 32; i++) {
-            publicInputs[192 + i] = bytes1(uint8(uint256(chainIdBytes) >> (8 * (31 - i))));
-        }
-
-        // Non-privileged transactions count = 0 (bytes 224..256 already zeroed)
-
-        return publicInputs;
+        // Note: the last 32 bytes encode the non-privileged transaction count and are intentionally set to zero.
+        // The privileged transaction count is encoded separately in the first two bytes of
+        // `processedPrivilegedTransactionsRollingHash` and is handled during verification.
+        return abi.encodePacked(
+            previousBatch.newStateRoot,
+            currentBatch.newStateRoot,
+            currentBatch.withdrawalsLogsMerkleRoot,
+            currentBatch.processedPrivilegedTransactionsRollingHash,
+            currentBatch.stateDiffKZGVersionedHash,
+            currentBatch.lastBlockHash,
+            bytes32(CHAIN_ID),
+            bytes32(0)
+        );
     }
     /// @inheritdoc IOnChainProposer
     function revertBatch(
