@@ -302,13 +302,11 @@ contract OnChainProposer is
         }
 
         if (SP1VERIFIER != DEV_MODE) {
-            // SP1 public values include an 8-byte length header.
-            bytes memory sp1PublicValues = bytes.concat(bytes8(uint64(publicInputs.length)), publicInputs);
             // If the verification fails, it will revert.
             _verifyPublicData(batchNumber, publicInputs);
             ISP1Verifier(SP1VERIFIER).verifyProof(
                 SP1_VERIFICATION_KEY,
-                sp1PublicValues,
+                publicInputs,
                 sp1ProofBytes
             );
         }
