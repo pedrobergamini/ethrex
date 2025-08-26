@@ -303,7 +303,7 @@ contract OnChainProposer is
 
         if (SP1VERIFIER != DEV_MODE) {
             // SP1 public values include an 8-byte length header.
-            bytes memory sp1PublicValues = abi.encodePacked(uint64(publicInputs.length), publicInputs);
+            bytes memory sp1PublicValues = bytes.concat(bytes8(uint64(publicInputs.length)), publicInputs);
             // If the verification fails, it will revert.
             _verifyPublicData(batchNumber, publicInputs);
             ISP1Verifier(SP1VERIFIER).verifyProof(
@@ -475,7 +475,7 @@ contract OnChainProposer is
         // Note: the last 32 bytes encode the non-privileged transaction count and are intentionally set to zero.
         // The privileged transaction count is encoded separately in the first two bytes of
         // `processedPrivilegedTransactionsRollingHash` and is handled during verification.
-        return abi.encodePacked(
+        return bytes.concat(
             previousBatch.newStateRoot,
             currentBatch.newStateRoot,
             currentBatch.withdrawalsLogsMerkleRoot,

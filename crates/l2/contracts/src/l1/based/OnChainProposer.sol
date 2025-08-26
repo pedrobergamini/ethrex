@@ -355,7 +355,7 @@ contract OnChainProposer is
 
         if (SP1VERIFIER != DEV_MODE) {
             // SP1 public values include an 8-byte length header.
-            bytes memory sp1PublicValues = abi.encodePacked(uint64(publicInputs.length), publicInputs);
+            bytes memory sp1PublicValues = bytes.concat(bytes8(uint64(publicInputs.length)), publicInputs);
             // If the verification fails, it will revert.
             _verifyPublicData(batchNumber, publicInputs);
             ISP1Verifier(SP1VERIFIER).verifyProof(
