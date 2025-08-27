@@ -314,7 +314,7 @@ contract OnChainProposer is
         bytes memory sp1ProofBytes,
         //tdx
         bytes memory tdxSignature
-    ) external {
+    ) external override {
         // TODO: Refactor validation
         // TODO: imageid, programvkey and riscvvkey should be constants
         // TODO: organize each zkvm proof arguments in their own structs
