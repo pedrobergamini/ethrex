@@ -124,7 +124,7 @@ impl ProgramOutput {
     /// - 128..160: blob_versioned_hash
     /// - 160..192: last_block_hash
     /// - 192..224: chain_id (big-endian, 32 bytes)
-    /// - 224..256: zeroes (force non-privileged count to 0)
+    /// - 224..256: non-privileged transactions count (big-endian)
     #[cfg(feature = "l2")]
     pub fn encode_contract_pis(&self) -> Vec<u8> {
         [
@@ -135,7 +135,7 @@ impl ProgramOutput {
             self.blob_versioned_hash.to_fixed_bytes(),
             self.last_block_hash.to_fixed_bytes(),
             self.chain_id.to_big_endian(),
-            [0u8; 32],
+            self.non_privileged_count.to_big_endian(),
         ]
         .concat()
     }

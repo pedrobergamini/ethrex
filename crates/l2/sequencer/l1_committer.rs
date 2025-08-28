@@ -45,8 +45,8 @@ use spawned_concurrency::{
 };
 
 const COMMIT_FUNCTION_SIGNATURE_BASED: &str =
-    "commitBatch(uint256,bytes32,bytes32,bytes32,bytes32,bytes[])";
-const COMMIT_FUNCTION_SIGNATURE: &str = "commitBatch(uint256,bytes32,bytes32,bytes32,bytes32)";
+    "commitBatch(uint256,bytes32,bytes32,bytes32,bytes32,uint256,bytes[])";
+const COMMIT_FUNCTION_SIGNATURE: &str = "commitBatch(uint256,bytes32,bytes32,bytes32,bytes32,uint256)";
 
 #[derive(Clone)]
 pub enum InMessage {
@@ -433,6 +433,30 @@ impl L1Committer {
             Value::FixedBytes(last_block_hash.0.to_vec().into()),
         ];
 
+        // Compute non-privileged transactions count for the batch
+        let mut total_txs: u64 = 0;
+        let mut privileged_txs: u64 = 0;
+
+        for i in batch.first_block..=batch.last_block {
+            let block_body = self
+                .store
+                .get_block_body(i)
+                .await
+                .map_err(CommitterError::from)?
+                .ok_or(CommitterError::FailedToRetrieveDataFromStorage)?;
+
+            let txs_in_block: u64 = block_body
+                .transactions
+                .len()
+                .try_into()
+                .unwrap_or(u64::MAX);
+            total_txs = total_txs.saturating_add(txs_in_block);
+            let priv_in_block = get_block_privileged_transactions(&block_body.transactions);
+            let priv_in_block_count: u64 = priv_in_block.len().try_into().unwrap_or(u64::MAX);
+            privileged_txs = privileged_txs.saturating_add(priv_in_block_count);
+        }
+        let non_privileged_count = total_txs.saturating_sub(privileged_txs);
+
         let (commit_function_signature, values) = if self.based {
             let mut encoded_blocks: Vec<Bytes> = Vec::new();
 
@@ -455,12 +479,16 @@ impl L1Committer {
                 encoded_blocks.push(block.encode_to_vec().into());
             }
 
+            // Insert count before encoded blocks for based ABI
+            calldata_values.push(Value::Uint(U256::from(non_privileged_count)));
             calldata_values.push(Value::Array(
                 encoded_blocks.into_iter().map(Value::Bytes).collect(),
             ));
 
             (COMMIT_FUNCTION_SIGNATURE_BASED, calldata_values)
         } else {
+            // Append count as last arg for non-based ABI
+            calldata_values.push(Value::Uint(U256::from(non_privileged_count)));
             (COMMIT_FUNCTION_SIGNATURE, calldata_values)
         };
 

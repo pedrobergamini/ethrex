@@ -44,12 +44,14 @@ interface IOnChainProposer {
     /// @param processedPrivilegedTransactionsRollingHash the rolling hash of the processed
     /// privileged transactions of the batch to be committed.
     /// @param lastBlockHash the hash of the last block of the batch to be committed.
+    /// @param nonPrivilegedTransactionsCount the number of non-privileged transactions in the batch.
     function commitBatch(
         uint256 batchNumber,
         bytes32 newStateRoot,
         bytes32 withdrawalsLogsMerkleRoot,
         bytes32 processedPrivilegedTransactionsRollingHash,
-        bytes32 lastBlockHash
+        bytes32 lastBlockHash,
+        uint256 nonPrivilegedTransactionsCount
     ) external;
 
     /// @notice Method used to verify a batch of L2 blocks.

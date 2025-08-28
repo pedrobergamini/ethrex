@@ -41,12 +41,14 @@ interface IOnChainProposer {
     /// deposits logs of the batch to be committed.
     /// @param lastBlockHash the hash of the last block of the batch to be committed.
     /// @param _rlpEncodedBlocks the list of RLP-encoded blocks in the batch.
+    /// @param nonPrivilegedTransactionsCount the number of non-privileged transactions in the batch.
     function commitBatch(
         uint256 batchNumber,
         bytes32 newStateRoot,
         bytes32 withdrawalsLogsMerkleRoot,
         bytes32 processedDepositLogsRollingHash,
         bytes32 lastBlockHash,
+        uint256 nonPrivilegedTransactionsCount,
         bytes[] calldata _rlpEncodedBlocks
     ) external;
 

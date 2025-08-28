@@ -35,6 +35,7 @@ contract OnChainProposer is
         bytes32 processedPrivilegedTransactionsRollingHash;
         bytes32 withdrawalsLogsMerkleRoot;
         bytes32 lastBlockHash;
+        uint256 nonPrivilegedTransactionsCount;
     }
 
     /// @notice The commitments of the committed batches.
@@ -158,7 +159,8 @@ contract OnChainProposer is
             bytes32(0),
             bytes32(0),
             bytes32(0),
-            bytes32(0)
+            bytes32(0),
+            0
         );
 
         for (uint256 i = 0; i < sequencerAddresses.length; i++) {
@@ -185,7 +187,8 @@ contract OnChainProposer is
         bytes32 newStateRoot,
         bytes32 withdrawalsLogsMerkleRoot,
         bytes32 processedPrivilegedTransactionsRollingHash,
-        bytes32 lastBlockHash
+        bytes32 lastBlockHash,
+        uint256 nonPrivilegedTransactionsCount
     ) external override onlySequencer whenNotPaused {
         // TODO: Refactor validation
         require(
@@ -238,7 +241,8 @@ contract OnChainProposer is
             blobVersionedHash,
             processedPrivilegedTransactionsRollingHash,
             withdrawalsLogsMerkleRoot,
-            lastBlockHash
+            lastBlockHash,
+            nonPrivilegedTransactionsCount
         );
         emit BatchCommitted(newStateRoot);
 
@@ -448,6 +452,11 @@ contract OnChainProposer is
             bytes32(publicData[224:256])
         );
         require(
+            nonPrivilegedTransactions ==
+                batchCommitments[batchNumber].nonPrivilegedTransactionsCount,
+            "OnChainProposer: non-privileged transactions count does not match committed value"
+        );
+        require(
             !ICommonBridge(BRIDGE).hasExpiredPrivilegedTransactions() ||
                 nonPrivilegedTransactions == 0,
             "OnChainProposer: exceeded privileged transaction inclusion deadline, can't include non-privileged transactions"
@@ -463,14 +472,14 @@ contract OnChainProposer is
     /// - bytes 128-160: Blob versioned hash (from the current batch)
     /// - bytes 160-192: Last block hash (from the current batch)
     /// - bytes 192-224: Chain ID
-    /// - bytes 224-256: Non-privileged transactions (set to 0)
+    /// - bytes 224-256: Non-privileged transactions count (from the current batch)
     function _getPublicInputsFromCommitment(
         uint256 batchNumber
     ) internal view returns (bytes memory) {
         BatchCommitmentInfo memory currentBatch = batchCommitments[batchNumber];
         BatchCommitmentInfo memory previousBatch = batchCommitments[lastVerifiedBatch];
 
-        // Note: the last 32 bytes encode the non-privileged transaction count and are intentionally set to zero.
+        // Note: the last 32 bytes encode the non-privileged transaction count.
         // The privileged transaction count is encoded separately in the first two bytes of
         // `processedPrivilegedTransactionsRollingHash` and is handled during verification.
         return bytes.concat(
@@ -481,7 +490,7 @@ contract OnChainProposer is
             currentBatch.stateDiffKZGVersionedHash,
             currentBatch.lastBlockHash,
             bytes32(CHAIN_ID),
-            bytes32(0)
+            bytes32(currentBatch.nonPrivilegedTransactionsCount)
         );
     }
     /// @inheritdoc IOnChainProposer
